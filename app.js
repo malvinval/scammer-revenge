@@ -1,51 +1,47 @@
-const {default: axios} = require("axios")
+const fs = require('fs');
+const axios = require('axios');
+async function sendMessages(urls, customText) {
+  try {
+    console.log(`Sending: "${customText}"`);
+    const requests = urls.map((url, index) =>
+      axios
+        .get(`${url}${encodeURIComponent(customText)}`)
+        .then((response) => {
+          if (response.status === 200) {
+            return `Link ${index + 1}: OK`;
+          } else {
+            return `Link ${index + 1}: Unexpected status code: ${response.status}`;
+          }
+        })
+        .catch((error) => {
+          return `Link ${index + 1}: API down! ${error.message}`;
+        })
+    );
 
-const url = "https://api.telegram.org/bot6861974788:AAH_AbVplVpEG3XTRhVIgbMVqIeT-_y7vPQ/sendMessage?parse_mode=markdown&chat_id=6951548817&text=test"
+    const results = await Promise.allSettled(requests);
+    results.forEach((result) => {
+      console.log(result.value);
+    });
 
-async function sendMessage() {
-    try {
-        while (true) {
-            await axios.get(url)
-                .then((response) => {
-                    if (response.status == 200) {
-                        console.log(response)
-                    }
-                })
-        }
-    } catch (error) {
-        console.log("API down!")
-        sendMessage();
-    }
+    console.log('='.repeat(30));
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
 }
 
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
+async function main() {
+  try {
+    while (true) {
+      const urls = fs
+        .readFileSync('urls.txt', 'utf8')
+        .trim()
+        .split('\n');
+      const customText = 'Bismillah Mati'; //ADD YOUR CUSTOM TEXT HERE
+      await sendMessages(urls, customText);
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+}
+
+main();
