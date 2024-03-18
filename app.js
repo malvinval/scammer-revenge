@@ -1,51 +1,51 @@
-const {default: axios} = require("axios")
+const fs = require('fs');
+const axios = require('axios');
 
-const url = "https://api.telegram.org/bot6861974788:AAH_AbVplVpEG3XTRhVIgbMVqIeT-_y7vPQ/sendMessage?parse_mode=markdown&chat_id=6951548817&text=test"
+let totalMessagesSent = 0;
 
-async function sendMessage() {
-    try {
-        while (true) {
-            await axios.get(url)
-                .then((response) => {
-                    if (response.status == 200) {
-                        console.log(response)
-                    }
-                })
-        }
-    } catch (error) {
-        console.log("API down!")
-        sendMessage();
-    }
+async function sendMessages(urls, customText) {
+  try {
+    console.log(`Sending: "${customText}"`);
+    const requests = urls.map((url, index) =>
+      axios
+        .get(`${url}${encodeURIComponent(customText)}`)
+        .then((response) => {
+          if (response.status === 200) {
+            return `Link ${index + 1}: OK`;
+          } else {
+            return `Link ${index + 1}: Unexpected status code: ${response.status}`;
+          }
+        })
+        .catch((error) => {
+          return `Link ${index + 1}: API down!: ${error.message}`;
+        })
+    );
+    const results = await Promise.allSettled(requests);
+    results.forEach((result) => {
+      console.log(result.value);
+    });
+    totalMessagesSent++;
+    console.log(`Total messages sent: ${totalMessagesSent}`);
+    console.log('='.repeat(30));    
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
 }
 
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
-sendMessage();
+async function main() {
+  try {
+    const urls = fs
+      .readFileSync('urls.txt', 'utf8')
+      .trim()
+      .split('\n');
+    const customText = 'Bismillah Mati'; // Custom text
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    while (true) {
+      await sendMessages(urls, customText);
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+}
+
+main();
